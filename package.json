@@ -1,5 +1,5 @@
 {
-  "name": "my-expo-app",
+  "name": "cocina",
   "version": "1.0.0",
   "scripts": {
     "android": "expo start --android",
@@ -31,6 +31,7 @@
     "prettier-plugin-tailwindcss": "^0.5.11",
     "typescript": "~5.9.2"
   },
-  "main": "node_modules/expo/AppEntry.js",
+  "main": "expo-router/entry",
   "private": true
 }
+
