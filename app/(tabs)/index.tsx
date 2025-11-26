@@ -9,7 +9,7 @@ export default function Index() {
   const [error, setError] = useState(null);
 
   useEffect(() => {
-    fetch('http://localhost:8000/recipes/1')
+    fetch(`${process.env.EXPO_PUBLIC_API_URL}/recipes/1`)
       .then(res => res.json())
       .then(data => {
         setRecipes(data);

@@ -8,7 +8,7 @@ export default function Ingredients() {
   const [error, setError] = useState(null);
 
   useEffect(() => {
-    fetch('http://localhost:8000/ingredients/1')
+    fetch(`${process.env.EXPO_PUBLIC_API_URL}/ingredients/1`)
       .then(res => res.json())
       .then(data => {
         setIngredients(data);

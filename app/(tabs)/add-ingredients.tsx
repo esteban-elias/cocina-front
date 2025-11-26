@@ -12,8 +12,7 @@ export default function addIngredients() {
   useEffect(() => {
     const scanImg = async () => {
       try {
-        // If using Android Emulator, use 'http://10.0.2.2:8000/scan-ingredients'
-        const response = await fetch('http://localhost:8000/scan-ingredients', {
+        const response = await fetch(`${process.env.EXPO_PUBLIC_API_URL}/scan-ingredients`, {
           method: 'POST',
           headers: {
             'Content-Type': 'application/json',
