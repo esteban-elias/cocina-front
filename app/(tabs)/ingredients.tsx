@@ -2,7 +2,7 @@ import '../../global.css';
 import { useEffect, useState } from 'react';
 import { View, Text } from 'react-native';
 
-export default function Index() {
+export default function Ingredients() {
   const [ingredients, setIngredients] = useState([]);
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState(null);
