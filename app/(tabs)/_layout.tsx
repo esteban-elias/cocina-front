@@ -15,6 +15,13 @@ export default function TabLayout() {
           }}
         />
         <Tabs.Screen
+          name='add-ingredients'
+          options={{
+            title: 'Agregar Ingredientes',
+            tabBarIcon: ({ color }) => <MaterialIcons size={28} name="add" color={color} />,
+          }}
+        />
+        <Tabs.Screen
           name='ingredients'
           options={{
             title: 'Ingredientes',
