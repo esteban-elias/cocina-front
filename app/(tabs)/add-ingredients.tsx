@@ -2,10 +2,14 @@ import '../../global.css';
 import { useRef, useState } from 'react';
 import { View, Text, Image, ActivityIndicator, ScrollView, TouchableOpacity } from 'react-native';
 import { CameraView, useCameraPermissions } from 'expo-camera';
+import { router } from 'expo-router';
+
+const USER_ID = 1; // TODO: Get from auth context
 
 export default function AddIngredients() {
   const [scannedIngredients, setScannedIngredients] = useState([]);
   const [isLoading, setIsLoading] = useState(false);
+  const [isSubmitting, setIsSubmitting] = useState(false);
   const [error, setError] = useState(null);
   const [photoUri, setPhotoUri] = useState<string | null>(null);
   const [permission, requestPermission] = useCameraPermissions();
@@ -22,9 +26,6 @@ export default function AddIngredients() {
     setError(null);
 
     try {
-      const response = await fetch(photo.uri);
-      const blob = await response.blob();
-
       const formData = new FormData();
       formData.append('file', {
         uri: photo.uri,
@@ -48,6 +49,32 @@ export default function AddIngredients() {
       console.error("Scan error:", err);
     } finally {
       setIsLoading(false);
+    }
+  };
+
+  const confirmIngredients = async () => {
+    if (scannedIngredients.length === 0) return;
+
+    setIsSubmitting(true);
+    try {
+      const ingredientIds = scannedIngredients.map((ing) => ing.id);
+
+      const response = await fetch(`${process.env.EXPO_PUBLIC_API_URL}/ingredients/${USER_ID}`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(ingredientIds),
+      });
+
+      if (!response.ok) {
+        throw new Error(`HTTP error! status: ${response.status}`);
+      }
+
+      router.replace('/(tabs)/ingredients');
+    } catch (err) {
+      setError(err);
+      console.error("Confirm error:", err);
+    } finally {
+      setIsSubmitting(false);
     }
   };
 
@@ -126,8 +153,14 @@ export default function AddIngredients() {
         <TouchableOpacity onPress={resetCamera} className="px-6 py-3 rounded-full bg-gray-200">
           <Text className="font-bold">Retake</Text>
         </TouchableOpacity>
-        <TouchableOpacity className="px-6 py-3 rounded-full bg-black shadow-lg">
-          <Text className="text-white font-bold">Confirmar ({scannedIngredients.length}) ➡️</Text>
+        <TouchableOpacity 
+          onPress={confirmIngredients} 
+          disabled={isSubmitting || scannedIngredients.length === 0}
+          className={`px-6 py-3 rounded-full shadow-lg ${isSubmitting ? 'bg-gray-400' : 'bg-black'}`}
+        >
+          <Text className="text-white font-bold">
+            {isSubmitting ? 'Adding...' : `Confirmar (${scannedIngredients.length}) ➡️`}
+          </Text>
         </TouchableOpacity>
       </View>
     </View>
