@@ -1,78 +1,120 @@
 import '../../global.css';
-import { useEffect, useState } from 'react';
-import { View, Text, Image, ActivityIndicator, ScrollView } from 'react-native';
+import { useRef, useState } from 'react';
+import { View, Text, Image, ActivityIndicator, ScrollView, TouchableOpacity } from 'react-native';
+import { CameraView, useCameraPermissions } from 'expo-camera';
 
-export default function addIngredients() {
+export default function AddIngredients() {
   const [scannedIngredients, setScannedIngredients] = useState([]);
-  const [isLoading, setIsLoading] = useState(true);
+  const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState(null);
+  const [photoUri, setPhotoUri] = useState<string | null>(null);
+  const [permission, requestPermission] = useCameraPermissions();
+  const cameraRef = useRef<CameraView>(null);
 
-  const imgUrl = 'https://assets.bonappetit.com/photos/57f7c8c4be4b67a12eecd7c9/master/w_4807,h_3434,c_limit/pantry-basic-ba-grid.jpg'
+  const takePicture = async () => {
+    if (!cameraRef.current) return;
+    
+    const photo = await cameraRef.current.takePictureAsync();
+    if (!photo) return;
+    
+    setPhotoUri(photo.uri);
+    setIsLoading(true);
+    setError(null);
 
-  useEffect(() => {
-    const scanImg = async () => {
-      try {
-        const response = await fetch(`${process.env.EXPO_PUBLIC_API_URL}/scan-ingredients`, {
-          method: 'POST',
-          headers: {
-            'Content-Type': 'application/json',
-          },
-          body: JSON.stringify({
-            image_url: imgUrl,
-          }),
-        });
+    try {
+      const response = await fetch(photo.uri);
+      const blob = await response.blob();
 
-        if (!response.ok) {
-          throw new Error(`HTTP error! status: ${response.status}`);
-        }
+      const formData = new FormData();
+      formData.append('file', {
+        uri: photo.uri,
+        type: 'image/jpeg',
+        name: 'image.jpg',
+      } as any);
 
-        const data = await response.json();
-        
-        // Extract the 'ingredients' array from the response object
-        setScannedIngredients(data.ingredients || []);
-      } catch (err) {
-        setError(err);
-        console.error("Scan error:", err);
-      } finally {
-        setIsLoading(false);
+      const apiResponse = await fetch(`${process.env.EXPO_PUBLIC_API_URL}/scan-ingredients`, {
+        method: 'POST',
+        body: formData,
+      });
+
+      if (!apiResponse.ok) {
+        throw new Error(`HTTP error! status: ${apiResponse.status}`);
       }
-    };
 
-    scanImg();
-  }, []);
+      const data = await apiResponse.json();
+      setScannedIngredients(data.ingredients || []);
+    } catch (err) {
+      setError(err);
+      console.error("Scan error:", err);
+    } finally {
+      setIsLoading(false);
+    }
+  };
 
-  if (isLoading) return (
-    <View className="flex-1 justify-center items-center">
-      <ActivityIndicator size="large" />
-      <Text className="mt-4 text-gray-500">Scanning image...</Text>
-    </View>
-  );
+  const resetCamera = () => {
+    setPhotoUri(null);
+    setScannedIngredients([]);
+    setError(null);
+  };
 
-  if (error) return (
-    <View className="flex-1 justify-center items-center p-4">
-      <Text className="text-red-500">Error: {error.message}</Text>
-    </View>
-  );
+  if (!permission) {
+    return <View className="flex-1" />;
+  }
+
+  if (!permission.granted) {
+    return (
+      <View className="flex-1 justify-center items-center p-4">
+        <Text className="text-center pb-4">We need your permission to use the camera</Text>
+        <TouchableOpacity onPress={requestPermission} className="px-6 py-3 bg-black rounded-full">
+          <Text className="text-white font-bold">Grant Permission</Text>
+        </TouchableOpacity>
+      </View>
+    );
+  }
+
+  if (!photoUri) {
+    return (
+      <View className="flex-1 bg-black">
+        <CameraView ref={cameraRef} style={{ flex: 1 }} facing="back" />
+        <View className="absolute bottom-10 left-0 right-0 items-center">
+          <TouchableOpacity onPress={takePicture} className="size-20 rounded-full bg-white border-4 border-gray-300" />
+        </View>
+      </View>
+    );
+  }
+
+  if (isLoading) {
+    return (
+      <View className="flex-1 justify-center items-center">
+        <ActivityIndicator size="large" />
+        <Text className="mt-4 text-gray-500">Scanning image...</Text>
+      </View>
+    );
+  }
+
+  if (error) {
+    return (
+      <View className="flex-1 justify-center items-center p-4">
+        <Text className="text-red-500">Error: {error.message}</Text>
+        <TouchableOpacity onPress={resetCamera} className="mt-4 px-6 py-3 bg-black rounded-full">
+          <Text className="text-white font-bold">Try Again</Text>
+        </TouchableOpacity>
+      </View>
+    );
+  }
 
   return (
-    <View className='flex-1 gap-4 bg-white'>
-      {/* Display the image being scanned */}
-      <Image 
-        source={{ uri: imgUrl }} 
-        className='h-80 w-full bg-zinc-300'
-        resizeMode="cover"
-      />
+    <View className="flex-1 gap-4 bg-white">
+      <Image source={{ uri: photoUri }} className="h-80 w-full bg-zinc-300" resizeMode="cover" />
       
       <Text className="px-4 text-xl font-bold">Detected Ingredients:</Text>
 
-      <ScrollView className='flex-1'>
-        {/* Added flex-wrap so ingredients flow to the next line */}
-        <View className='px-4 flex-row flex-wrap gap-4 pb-20'>
+      <ScrollView className="flex-1">
+        <View className="px-4 flex-row flex-wrap gap-4 pb-20">
           {scannedIngredients.map((ingredient) => (
-            <View key={ingredient.id} className='w-32 gap-2 mb-2'>
-              <View className='size-32 bg-zinc-200 rounded-lg items-center justify-center'>
-                 {/* Placeholder for ingredient icon */}
-                 <Text className="text-2xl">🥕</Text>
+            <View key={ingredient.id} className="w-32 gap-2 mb-2">
+              <View className="size-32 bg-zinc-200 rounded-lg items-center justify-center">
+                <Text className="text-2xl">🥕</Text>
               </View>
               <Text className="font-medium text-center">{ingredient.name}</Text>
             </View>
@@ -80,13 +122,15 @@ export default function addIngredients() {
         </View>
       </ScrollView>
 
-      {/* Floating Confirm Button */}
-      <View className='absolute bottom-10 left-0 right-0 items-center'>
-        <View className='px-6 py-3 rounded-full bg-black shadow-lg'>
+      <View className="absolute bottom-10 left-0 right-0 items-center flex-row justify-center gap-4">
+        <TouchableOpacity onPress={resetCamera} className="px-6 py-3 rounded-full bg-gray-200">
+          <Text className="font-bold">Retake</Text>
+        </TouchableOpacity>
+        <TouchableOpacity className="px-6 py-3 rounded-full bg-black shadow-lg">
           <Text className="text-white font-bold">Confirmar ({scannedIngredients.length}) ➡️</Text>
-        </View>
+        </TouchableOpacity>
       </View>
     </View>
-  )
+  );
 }
 
