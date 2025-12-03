@@ -1,13 +1,14 @@
 import '../../global.css';
 import { useCallback, useState } from 'react';
-import { View, ScrollView, Text, Button, Image } from 'react-native';
-import { useFocusEffect } from 'expo-router';
+import { View, ScrollView, Text, Button, Image, Pressable } from 'react-native';
+import { useFocusEffect, useRouter } from 'expo-router';
 
 
 export default function Index() {
   const [recipes, setRecipes] = useState([]);
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState(null);
+  const router = useRouter();
 
   useFocusEffect(
     useCallback(() => {
@@ -44,34 +45,41 @@ export default function Index() {
         <Text className=''>En base a tus ingredientes, te sugerimos:</Text>
         <View className='gap-4'>
           {recipes.map((recipe) => (
-            <View key={recipe.id}>
-              <Text>{recipe.name}</Text>
+            <Pressable
+              key={recipe.id}
+              onPress={() =>
+                router.push({
+                  pathname: '/recipe/[id]',
+                  params: {
+                    id: String(recipe.id),
+                    name: recipe.name,
+                    instructions: recipe.instructions,
+                    missingProducts: JSON.stringify(recipe.missing_products ?? []),
+                  },
+                })
+              }
+            >
               <View>
-                {recipe.matching_ingredients.map((ingredient) => (
-                  <Text key={ingredient.id} className='text-green-500'>
-                    {ingredient.name}
-                  </Text>
-                ))}
+                <Text>{recipe.name}</Text>
+                <View>
+                  {recipe.matching_ingredients.map((ingredient) => (
+                    <Text key={ingredient.id} className='text-green-500'>
+                      {ingredient.name}
+                    </Text>
+                  ))}
+                </View>
+                <View>
+                  {recipe.missing_ingredients.map((ingredient) => (
+                    <Text key={ingredient.id} className='text-red-500'>
+                      {ingredient.name}
+                    </Text>
+                  ))}
+                </View>
               </View>
-              <View>
-                {recipe.missing_ingredients.map((ingredient) => (
-                  <Text key={ingredient.id} className='text-red-500'>
-                    {ingredient.name}
-                  </Text>
-                ))}
-              </View>
-              <View>
-                {recipe.missing_products.map((product) => (
-                  <Text key={product.id} className='text-blue-500'>
-                    {product.name}
-                  </Text>
-                ))}
-              </View>
-            </View>
+            </Pressable>
           ))}
         </View>
       </View>
     </ScrollView>
   );
 }
-
