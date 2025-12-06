@@ -19,8 +19,8 @@
           "savePhotosPermission": "Allow $(PRODUCT_NAME) to save photos.",
           "isAccessMediaLocationEnabled": true
         }
-      ]
-
+      ],
+      "expo-video"
     ],
     "orientation": "portrait",
     "icon": "./assets/icon.png",
@@ -44,4 +44,3 @@
     }
   }
 }
-

@@ -1,6 +1,6 @@
 import '../../global.css';
 import { useCallback, useState } from 'react';
-import { View, Text, ScrollView } from 'react-native';
+import { View, Text, ScrollView, Image } from 'react-native';
 import { useFocusEffect } from 'expo-router';
 
 const USER_ID = 1; // TODO: Get from auth context
@@ -31,10 +31,18 @@ export default function Ingredients() {
 
   return (
     <ScrollView className="flex-1">
-      <View className="p-4 flex-row flex-wrap gap-x-4 gap-y-8">
+      <View className="mt-8 flex-row flex-wrap justify-center gap-x-6 gap-y-8">
         {ingredients.map((ingredient) => (
-          <View key={ingredient.id} className="w-32 gap-2">
-            <View className="size-32 bg-zinc-200" />
+          <View key={ingredient.id} className="max-w-28 gap-2">
+            {ingredient.img_url ? (
+              <Image
+                source={{ uri: ingredient.img_url }}
+                className="size-28 rounded-2xl"
+                resizeMode="cover"
+              />
+            ) : (
+              <View className="size-28 rounded-2xl bg-zinc-300" />
+            )}
             <Text>{ingredient.name}</Text>
           </View>
         ))}
@@ -42,4 +50,3 @@ export default function Ingredients() {
     </ScrollView>  
   )
 }
-

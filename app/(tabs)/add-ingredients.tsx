@@ -137,12 +137,20 @@ export default function AddIngredients() {
       <Text className="px-4 text-xl font-bold">Detected Ingredients:</Text>
 
       <ScrollView className="flex-1">
-        <View className="px-4 flex-row flex-wrap gap-4 pb-20">
+        <View className="flex-row flex-wrap justify-center gap-x-6 gap-y-8 pb-32">
           {scannedIngredients.map((ingredient) => (
-            <View key={ingredient.id} className="w-32 gap-2 mb-2">
-              <View className="size-32 bg-zinc-200 rounded-lg items-center justify-center">
-                <Text className="text-2xl">🥕</Text>
-              </View>
+            <View key={ingredient.id} className="max-w-28 gap-2">
+              {ingredient.img_url ? (
+                <Image
+                  source={{ uri: ingredient.img_url }}
+                  className="size-28 rounded-lg"
+                  resizeMode="cover"
+                />
+              ) : (
+                <View className="size-32 bg-zinc-200 rounded-lg items-center justify-center">
+                  <Text className="text-2xl">🥕</Text>
+                </View>
+              )}
               <Text className="font-medium text-center">{ingredient.name}</Text>
             </View>
           ))}
@@ -166,4 +174,3 @@ export default function AddIngredients() {
     </View>
   );
 }
-

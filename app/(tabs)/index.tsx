@@ -15,9 +15,9 @@ export default function Index() {
       fetch(`${process.env.EXPO_PUBLIC_API_URL}/recipes/1`)
         .then(res => res.json())
         .then(data => {
-          // Sort by matching ingredients count descending
+          // Sort by missing ingredients count ascending
           const sorted = [...data.recipes].sort(
-            (a, b) => b.matching_ingredients.length - a.matching_ingredients.length
+            (a, b) => a.missing_ingredients.length - b.missing_ingredients.length
           );
           setRecipes(sorted);
           setIsLoading(false);
@@ -39,11 +39,11 @@ export default function Index() {
   }
 
   return (
-    <ScrollView className='px-4 pt-4 flex-1 gap-8 bg-zinc-400'>
+    <ScrollView className='px-4 pt-4 flex-1 gap-8'>
       <View className='gap-2'>
-        <Text className='text-2xl'>Recetas sugeridas 🍲</Text>
-        <Text className=''>En base a tus ingredientes, te sugerimos:</Text>
-        <View className='gap-4'>
+        <Text className='text-2xl font-bold'>Recetas sugeridas 🍲</Text>
+        <Text className='text-xl text-zinc-600'>En base a tus ingredientes, te sugerimos:</Text>
+        <View className='gap-8 mt-4'>
           {recipes.map((recipe) => (
             <Pressable
               key={recipe.id}
@@ -55,23 +55,36 @@ export default function Index() {
                     name: recipe.name,
                     instructions: recipe.instructions,
                     missingProducts: JSON.stringify(recipe.missing_products ?? []),
+                    video_url: recipe.video_url,
                   },
                 })
               }
             >
-              <View>
-                <Text>{recipe.name}</Text>
-                <View>
+              <View className='p-4 rounded-2xl bg-zinc-200'>
+                <Text className='font-semibold'>{recipe.name}</Text>
+                {recipe.img_url ? (
+                  <Image
+                    source={{ uri: recipe.img_url }}
+                    className='mt-2 w-full h-48 rounded-2xl'
+                    resizeMode='cover'
+                  />
+                ) : null}
+
+
+
+                <View className='flex flex-row mt-2'>
+                  <Text>Ya tienes </Text>
                   {recipe.matching_ingredients.map((ingredient) => (
-                    <Text key={ingredient.id} className='text-green-500'>
-                      {ingredient.name}
+                    <Text key={ingredient.id} className='text-green-800'>
+                      {ingredient.name},{' '}
                     </Text>
                   ))}
                 </View>
-                <View>
+                <View className='flex flex-row flex-wrap'>
+                  <Text>Te falta </Text>
                   {recipe.missing_ingredients.map((ingredient) => (
-                    <Text key={ingredient.id} className='text-red-500'>
-                      {ingredient.name}
+                    <Text key={ingredient.id} className='text-red-800'>
+                      {ingredient.name},{' '}
                     </Text>
                   ))}
                 </View>
