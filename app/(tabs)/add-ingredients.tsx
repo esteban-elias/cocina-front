@@ -69,7 +69,7 @@ export default function AddIngredients() {
         throw new Error(`HTTP error! status: ${response.status}`);
       }
 
-      router.replace('/(tabs)/ingredients');
+      router.replace('/');
     } catch (err) {
       setError(err);
       console.error("Confirm error:", err);
