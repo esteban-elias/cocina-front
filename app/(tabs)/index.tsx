@@ -24,7 +24,11 @@ export default function Index() {
           const sorted = [...data.recipes].sort(
             (a, b) => a.missing_ingredients.length - b.missing_ingredients.length
           );
-          setRecipes(sorted);
+          // Filter to show only recipes with missing products
+          const filtered = sorted.filter(
+            (recipe) => recipe.missing_products.length > 0
+          )
+          setRecipes(filtered);
           setVisibleCount(15);
           setIsLoading(false);
         })
