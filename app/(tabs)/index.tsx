@@ -18,7 +18,7 @@ export default function Index() {
           // Sort by missing ingredients count ascending
           const sorted = [...data.recipes].sort(
             (a, b) => a.missing_ingredients.length - b.missing_ingredients.length
-          );
+          ).slice(0, 15); // Limit to 15 recipes
           setRecipes(sorted);
           setIsLoading(false);
         })
