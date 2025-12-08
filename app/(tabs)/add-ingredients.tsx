@@ -69,7 +69,11 @@ export default function AddIngredients() {
         throw new Error(`HTTP error! status: ${response.status}`);
       }
 
-      router.replace('/');
+      // Reset to camera view after successful add
+      setPhotoUri(null);
+      setScannedIngredients([]);
+      setError(null);
+      router.replace('/')
     } catch (err) {
       setError(err);
       console.error("Confirm error:", err);
