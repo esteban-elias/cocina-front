@@ -1,6 +1,6 @@
 import '../../global.css';
-import { useCallback, useContext, useState } from 'react';
-import { View, ScrollView, Text, Button, Image, Pressable } from 'react-native';
+import { useCallback, useContext, useMemo, useState } from 'react';
+import { View, ScrollView, Text, Image, Pressable } from 'react-native';
 import { useFocusEffect, useRouter } from 'expo-router';
 import { RefreshContext } from './refresh-context';
 
@@ -9,6 +9,7 @@ export default function Index() {
   const [recipes, setRecipes] = useState([]);
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState(null);
+  const [visibleCount, setVisibleCount] = useState(15);
   const router = useRouter();
   const { refreshRecipesKey } = useContext(RefreshContext);
 
@@ -22,8 +23,9 @@ export default function Index() {
           // Sort by missing ingredients count ascending
           const sorted = [...data.recipes].sort(
             (a, b) => a.missing_ingredients.length - b.missing_ingredients.length
-          ).slice(0, 15); // Limit to 15 recipes
+          );
           setRecipes(sorted);
+          setVisibleCount(15);
           setIsLoading(false);
         })
         .catch(err => {
@@ -32,6 +34,18 @@ export default function Index() {
         });
     }, [refreshRecipesKey])
   );
+
+  const visibleRecipes = useMemo(
+    () => recipes.slice(0, visibleCount),
+    [recipes, visibleCount]
+  );
+
+  const canLoadMore = visibleCount < recipes.length;
+
+  const handleLoadMore = () => {
+    if (!canLoadMore) return;
+    setVisibleCount((prev) => Math.min(prev + 15, recipes.length));
+  };
 
   if (isLoading) return <Text>Loading...</Text>;
   if (error) return <Text>Error: {error.message}</Text>;
@@ -44,11 +58,11 @@ export default function Index() {
 
   return (
     <ScrollView className='px-4 pt-4 flex-1 gap-8'>
-      <View className='gap-2'>
+      <View className='pb-10 gap-2'>
         <Text className='text-2xl font-bold'>Recetas sugeridas 🍲</Text>
         <Text className='text-xl text-zinc-600'>En base a tus ingredientes, te sugerimos:</Text>
         <View className='gap-8 mt-4'>
-          {recipes.map((recipe) => (
+          {visibleRecipes.map((recipe) => (
             <Pressable
               key={recipe.id}
               onPress={() =>
@@ -95,6 +109,14 @@ export default function Index() {
               </View>
             </Pressable>
           ))}
+          {canLoadMore ? (
+            <Pressable
+              onPress={handleLoadMore}
+              className="self-center rounded-full bg-black px-5 py-3"
+            >
+              <Text className="text-white font-bold">Cargar más</Text>
+            </Pressable>
+          ) : null}
         </View>
       </View>
     </ScrollView>
