@@ -1,10 +1,11 @@
-import { useCallback, useEffect, useState } from 'react';
+import { useCallback, useContext, useEffect, useState } from 'react';
 import { ActivityIndicator, Alert, Image, Modal, Pressable, ScrollView, Text, View } from 'react-native';
 import { Tabs } from 'expo-router';
 import { StatusBar } from 'expo-status-bar';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import MaterialIcons from '@expo/vector-icons/MaterialIcons';
 import '../../global.css';
+import { RefreshContext, RefreshProvider } from './refresh-context';
 
 const USER_ID = 1; // TODO: Get from auth context
 const ONBOARDING_KEY = 'hasOnboarded';
@@ -16,6 +17,7 @@ type Ingredient = {
 };
 
 function BasicIngredientsModal() {
+  const { triggerRefreshRecipes } = useContext(RefreshContext);
   const [isVisible, setIsVisible] = useState(false);
   const [isLoading, setIsLoading] = useState(true);
   const [isSubmitting, setIsSubmitting] = useState(false);
@@ -89,6 +91,7 @@ function BasicIngredientsModal() {
 
       await AsyncStorage.setItem(ONBOARDING_KEY, 'true');
       setIsVisible(false);
+      triggerRefreshRecipes();
     } catch (err) {
       const message = err instanceof Error ? err.message : 'Failed to add ingredients';
       Alert.alert('Could not add basics', message);
@@ -162,7 +165,7 @@ function BasicIngredientsModal() {
 
 export default function TabLayout() {
   return (
-    <>
+    <RefreshProvider>
       <BasicIngredientsModal />
       <Tabs>
         <Tabs.Screen
@@ -188,6 +191,6 @@ export default function TabLayout() {
         />
       </Tabs>
       <StatusBar style="auto" />
-    </>
+    </RefreshProvider>
   );
 }

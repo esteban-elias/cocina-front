@@ -1,7 +1,8 @@
 import '../../global.css';
-import { useCallback, useState } from 'react';
+import { useCallback, useContext, useState } from 'react';
 import { View, ScrollView, Text, Button, Image, Pressable } from 'react-native';
 import { useFocusEffect, useRouter } from 'expo-router';
+import { RefreshContext } from './refresh-context';
 
 
 export default function Index() {
@@ -9,9 +10,12 @@ export default function Index() {
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState(null);
   const router = useRouter();
+  const { refreshRecipesKey } = useContext(RefreshContext);
 
   useFocusEffect(
     useCallback(() => {
+      setIsLoading(true);
+      setError(null);
       fetch(`${process.env.EXPO_PUBLIC_API_URL}/recipes/1`)
         .then(res => res.json())
         .then(data => {
@@ -26,7 +30,7 @@ export default function Index() {
           setError(err);
           setIsLoading(false);
         });
-    }, [])
+    }, [refreshRecipesKey])
   );
 
   if (isLoading) return <Text>Loading...</Text>;
