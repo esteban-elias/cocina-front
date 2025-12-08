@@ -1,8 +1,9 @@
 import '../../global.css';
 import { useRef, useState } from 'react';
-import { View, Text, Image, ActivityIndicator, ScrollView, TouchableOpacity } from 'react-native';
+import { View, Text, Image, ActivityIndicator, ScrollView, TouchableOpacity, Pressable } from 'react-native';
 import { CameraView, useCameraPermissions } from 'expo-camera';
 import { router } from 'expo-router';
+import MaterialIcons from '@expo/vector-icons/MaterialIcons';
 
 const USER_ID = 1; // TODO: Get from auth context
 
@@ -88,6 +89,12 @@ export default function AddIngredients() {
     setError(null);
   };
 
+  const removeScannedIngredient = (ingredientId: number) => {
+    setScannedIngredients((prev) =>
+      prev.filter((ingredient: { id: number }) => ingredient.id !== ingredientId)
+    );
+  };
+
   if (!permission) {
     return <View className="flex-1" />;
   }
@@ -143,7 +150,14 @@ export default function AddIngredients() {
       <ScrollView className="flex-1">
         <View className="flex-row flex-wrap justify-center gap-x-6 gap-y-8 pb-32">
           {scannedIngredients.map((ingredient) => (
-            <View key={ingredient.id} className="max-w-28 gap-2">
+            <View key={ingredient.id} className="relative max-w-28 gap-2">
+              <Pressable
+                onPress={() => removeScannedIngredient(ingredient.id)}
+                className="absolute right-0 top-0 z-10 bg-zinc-100 rounded-full p-1.5"
+                hitSlop={12}
+              >
+                <MaterialIcons size={12} name="close" color='red' />
+              </Pressable>
               {ingredient.img_url ? (
                 <Image
                   source={{ uri: ingredient.img_url }}
