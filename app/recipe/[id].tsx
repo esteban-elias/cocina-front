@@ -3,6 +3,16 @@ import { ScrollView, Text, View, Pressable, Linking } from 'react-native';
 import YoutubePlayer from 'react-native-youtube-iframe';
 import { WebView } from 'react-native-webview';
 
+const USER_ID = 1; // TODO: Get from auth context
+
+type MissingProduct = {
+  id: number;
+  name: string;
+  url: string;
+  price?: number;
+  ingredient_id?: number | null;
+};
+
 export default function RecipeDetail() {
   const params = useLocalSearchParams();
 
@@ -18,9 +28,37 @@ export default function RecipeDetail() {
     ? params.missingProducts[0]
     : params.missingProducts;
 
-  const missingProducts = missingProductsParam ? JSON.parse(missingProductsParam) : [];
+  let missingProducts: MissingProduct[] = [];
+  if (missingProductsParam) {
+    try {
+      missingProducts = JSON.parse(missingProductsParam) as MissingProduct[];
+    } catch (error) {
+      console.warn('Invalid missing products payload', error);
+    }
+  }
   const videoUrlParam = Array.isArray(params.video_url) ? params.video_url[0] : params.video_url;
   const videoId = videoUrlParam ? getYouTubeVideoId(videoUrlParam) : null;
+
+  const handleProductPress = async (product: MissingProduct) => {
+    try {
+      await fetch(`${process.env.EXPO_PUBLIC_API_URL}/product-clicks`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          user_id: USER_ID,
+          product_id: product.id,
+        }),
+      });
+    } catch (error) {
+      console.warn('Failed to record product click', error);
+    } finally {
+      try {
+        await Linking.openURL(product.url);
+      } catch (linkError) {
+        console.warn('Failed to open product URL', linkError);
+      }
+    }
+  };
 
   return (
     <ScrollView className="flex-1 px-4 pt-4 gap-4">
@@ -45,11 +83,11 @@ export default function RecipeDetail() {
         {missingProducts.length === 0 ? (
           <Text className="text-sm text-gray-600">No hay productos sugeridos.</Text>
         ) : (
-          missingProducts.map((product: any) => (
+          missingProducts.map((product) => (
             <Pressable
               key={product.id}
               className="mt-4"
-              onPress={() => Linking.openURL(product.url)}
+              onPress={() => handleProductPress(product)}
             >
               <Text className="text-blue-500">{product.name}</Text>
               <Text className="text-blue-500 underline">{product.url}</Text>
