@@ -4,8 +4,7 @@ import { View, Text, Image, ActivityIndicator, ScrollView, TouchableOpacity, Pre
 import { CameraView, useCameraPermissions } from 'expo-camera';
 import { router } from 'expo-router';
 import MaterialIcons from '@expo/vector-icons/MaterialIcons';
-
-const USER_ID = 1; // TODO: Get from auth context
+import { useDeviceId } from '../../hooks/use-device-id';
 
 export default function AddIngredients() {
   const [scannedIngredients, setScannedIngredients] = useState([]);
@@ -15,6 +14,30 @@ export default function AddIngredients() {
   const [photoUri, setPhotoUri] = useState<string | null>(null);
   const [permission, requestPermission] = useCameraPermissions();
   const cameraRef = useRef<CameraView>(null);
+  const {
+    deviceId,
+    isLoading: isDeviceIdLoading,
+    error: deviceIdError,
+  } = useDeviceId();
+
+  if (isDeviceIdLoading) {
+    return (
+      <View className="flex-1 justify-center items-center">
+        <ActivityIndicator size="large" />
+        <Text className="mt-4 text-gray-500">Preparando tu dispositivo...</Text>
+      </View>
+    );
+  }
+
+  if (deviceIdError) {
+    return (
+      <View className="flex-1 justify-center items-center p-4">
+        <Text className="text-red-500 text-center">
+          Error al iniciar el dispositivo: {deviceIdError.message}
+        </Text>
+      </View>
+    );
+  }
 
   const takePicture = async () => {
     if (!cameraRef.current) return;
@@ -54,13 +77,13 @@ export default function AddIngredients() {
   };
 
   const confirmIngredients = async () => {
-    if (scannedIngredients.length === 0) return;
+    if (scannedIngredients.length === 0 || !deviceId) return;
 
     setIsSubmitting(true);
     try {
       const ingredientIds = scannedIngredients.map((ing) => ing.id);
 
-      const response = await fetch(`${process.env.EXPO_PUBLIC_API_URL}/ingredients/${USER_ID}`, {
+      const response = await fetch(`${process.env.EXPO_PUBLIC_API_URL}/ingredients/${deviceId}`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify(ingredientIds),
@@ -74,7 +97,7 @@ export default function AddIngredients() {
       setPhotoUri(null);
       setScannedIngredients([]);
       setError(null);
-      router.replace('/')
+      router.replace('/');
     } catch (err) {
       setError(err);
       console.error("Confirm error:", err);
@@ -181,8 +204,10 @@ export default function AddIngredients() {
         </TouchableOpacity>
         <TouchableOpacity 
           onPress={confirmIngredients} 
-          disabled={isSubmitting || scannedIngredients.length === 0}
-          className={`px-6 py-3 rounded-full shadow-lg ${isSubmitting ? 'bg-gray-400' : 'bg-black'}`}
+          disabled={isSubmitting || !deviceId || scannedIngredients.length === 0}
+          className={`px-6 py-3 rounded-full shadow-lg ${
+            isSubmitting || !deviceId ? 'bg-gray-400' : 'bg-black'
+          }`}
         >
           <Text className="text-white font-bold">
             {isSubmitting ? 'Adding...' : `Confirmar (${scannedIngredients.length}) ➡️`}

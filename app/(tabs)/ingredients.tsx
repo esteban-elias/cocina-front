@@ -3,8 +3,7 @@ import { useCallback, useMemo, useState } from 'react';
 import { Alert, Image, Modal, Pressable, ScrollView, Text, TextInput, View } from 'react-native';
 import { useFocusEffect } from 'expo-router';
 import MaterialIcons from '@expo/vector-icons/MaterialIcons';
-
-const USER_ID = 1; // TODO: Get from auth context
+import { useDeviceId } from '../../hooks/use-device-id';
 
 type Ingredient = {
   id: number;
@@ -14,17 +13,23 @@ type Ingredient = {
 
 export default function Ingredients() {
   const [ingredients, setIngredients] = useState<Ingredient[]>([]);
-  const [isLoading, setIsLoading] = useState(true);
+  const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState<Error | null>(null);
   const [isManualModalVisible, setIsManualModalVisible] = useState(false);
   const [allIngredients, setAllIngredients] = useState<Ingredient[]>([]);
   const [searchTerm, setSearchTerm] = useState('');
+  const {
+    deviceId,
+    isLoading: isDeviceIdLoading,
+    error: deviceIdError,
+  } = useDeviceId();
 
   const fetchIngredients = useCallback(async () => {
+    if (!deviceId) return;
     setIsLoading(true);
     setError(null);
     try {
-      const response = await fetch(`${process.env.EXPO_PUBLIC_API_URL}/ingredients/${USER_ID}`);
+      const response = await fetch(`${process.env.EXPO_PUBLIC_API_URL}/ingredients/${deviceId}`);
       if (!response.ok) {
         throw new Error('Failed to load ingredients');
       }
@@ -36,12 +41,13 @@ export default function Ingredients() {
     } finally {
       setIsLoading(false);
     }
-  }, []);
+  }, [deviceId]);
 
   const deleteIngredient = useCallback(async (ingredientId: number) => {
+    if (!deviceId) return;
     try {
       const response = await fetch(
-        `${process.env.EXPO_PUBLIC_API_URL}/ingredients/${USER_ID}/${ingredientId}`,
+        `${process.env.EXPO_PUBLIC_API_URL}/ingredients/${deviceId}/${ingredientId}`,
         { method: 'DELETE' }
       );
 
@@ -58,7 +64,7 @@ export default function Ingredients() {
       const message = err instanceof Error ? err.message : 'Failed to delete ingredient';
       Alert.alert('Deletion failed', message);
     }
-  }, []);
+  }, [deviceId]);
 
   const confirmDelete = useCallback(
     (ingredient: Ingredient) => {
@@ -111,8 +117,9 @@ export default function Ingredients() {
 
   const addIngredient = useCallback(
     async (ingredient: Ingredient) => {
+      if (!deviceId) return;
       try {
-        const response = await fetch(`${process.env.EXPO_PUBLIC_API_URL}/ingredients/${USER_ID}`, {
+        const response = await fetch(`${process.env.EXPO_PUBLIC_API_URL}/ingredients/${deviceId}`, {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify([ingredient.id]),
@@ -135,7 +142,7 @@ export default function Ingredients() {
         Alert.alert('No se pudo agregar', message);
       }
     },
-    [closeManualModal]
+    [closeManualModal, deviceId]
   );
 
   const confirmManualAdd = useCallback(
@@ -159,7 +166,8 @@ export default function Ingredients() {
     }, [fetchIngredients])
   );
 
-  if (isLoading) return <Text>Loading...</Text>;
+  if (deviceIdError) return <Text>Error: {deviceIdError.message}</Text>;
+  if (isDeviceIdLoading || isLoading) return <Text>Loading...</Text>;
   if (error) return <Text>Error: {error.message}</Text>;
 
   return (

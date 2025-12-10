@@ -3,21 +3,28 @@ import { useCallback, useContext, useMemo, useState } from 'react';
 import { View, ScrollView, Text, Image, Pressable } from 'react-native';
 import { useFocusEffect, useRouter } from 'expo-router';
 import { RefreshContext } from './refresh-context';
+import { useDeviceId } from '../../hooks/use-device-id';
 
 
 export default function Index() {
   const [recipes, setRecipes] = useState([]);
-  const [isLoading, setIsLoading] = useState(true);
+  const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState(null);
   const [visibleCount, setVisibleCount] = useState(15);
   const router = useRouter();
   const { refreshRecipesKey } = useContext(RefreshContext);
+  const {
+    deviceId,
+    isLoading: isDeviceIdLoading,
+    error: deviceIdError,
+  } = useDeviceId();
 
   useFocusEffect(
     useCallback(() => {
+      if (!deviceId) return;
       setIsLoading(true);
       setError(null);
-      fetch(`${process.env.EXPO_PUBLIC_API_URL}/recipes/1`)
+      fetch(`${process.env.EXPO_PUBLIC_API_URL}/recipes/${deviceId}`)
         .then(res => res.json())
         .then(data => {
           // Sort by missing ingredients count ascending
@@ -36,7 +43,7 @@ export default function Index() {
           setError(err);
           setIsLoading(false);
         });
-    }, [refreshRecipesKey])
+    }, [deviceId, refreshRecipesKey])
   );
 
   const visibleRecipes = useMemo(
@@ -51,7 +58,8 @@ export default function Index() {
     setVisibleCount((prev) => Math.min(prev + 15, recipes.length));
   };
 
-  if (isLoading) return <Text>Loading...</Text>;
+  if (deviceIdError) return <Text>Error: {deviceIdError.message}</Text>;
+  if (isDeviceIdLoading || isLoading) return <Text>Loading...</Text>;
   if (error) return <Text>Error: {error.message}</Text>;
 
   if (recipes.length === 0) {

@@ -6,8 +6,8 @@ import AsyncStorage from '@react-native-async-storage/async-storage';
 import MaterialIcons from '@expo/vector-icons/MaterialIcons';
 import '../../global.css';
 import { RefreshContext, RefreshProvider } from './refresh-context';
+import { useDeviceId } from '../../hooks/use-device-id';
 
-const USER_ID = 1; // TODO: Get from auth context
 const ONBOARDING_KEY = 'hasOnboarded';
 
 type Ingredient = {
@@ -23,6 +23,11 @@ function BasicIngredientsModal() {
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [hasCheckedOnboarding, setHasCheckedOnboarding] = useState(false);
   const [suggestedIngredients, setSuggestedIngredients] = useState<Ingredient[]>([]);
+  const {
+    deviceId,
+    isLoading: isDeviceIdLoading,
+    error: deviceIdError,
+  } = useDeviceId();
 
   const fetchBasics = useCallback(async () => {
     setIsLoading(true);
@@ -74,10 +79,15 @@ function BasicIngredientsModal() {
       return;
     }
 
+    if (!deviceId) {
+      Alert.alert('Preparando', 'Estamos configurando tu dispositivo, intenta en unos segundos.');
+      return;
+    }
+
     setIsSubmitting(true);
     try {
       const ingredientIds = suggestedIngredients.map((ingredient) => ingredient.id);
-      const response = await fetch(`${process.env.EXPO_PUBLIC_API_URL}/ingredients/${USER_ID}`, {
+      const response = await fetch(`${process.env.EXPO_PUBLIC_API_URL}/ingredients/${deviceId}`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify(ingredientIds),
@@ -98,7 +108,7 @@ function BasicIngredientsModal() {
     } finally {
       setIsSubmitting(false);
     }
-  }, [suggestedIngredients]);
+  }, [deviceId, suggestedIngredients]);
 
   if (!hasCheckedOnboarding || !isVisible) return null;
 
@@ -113,6 +123,11 @@ function BasicIngredientsModal() {
         <View className="flex-1">
           <Text className="text-xl font-bold">Agregar canasta básica</Text>
           <Text className="text-gray-600 mt-1">Elegimos algunos ingredientes para empezar.</Text>
+          {deviceIdError ? (
+            <Text className="text-red-500 mt-2">
+              No pudimos preparar el dispositivo: {deviceIdError.message}
+            </Text>
+          ) : null}
 
           {isLoading ? (
             <View className="py-8 items-center">
@@ -149,8 +164,10 @@ function BasicIngredientsModal() {
           <View className="mt-6 flex-row justify-end">
             <Pressable
               onPress={confirmAdd}
-              disabled={isSubmitting || isLoading}
-              className={`px-5 py-3 rounded-full ${isSubmitting || isLoading ? 'bg-gray-400' : 'bg-black'}`}
+              disabled={isSubmitting || isLoading || isDeviceIdLoading || !deviceId}
+              className={`px-5 py-3 rounded-full ${
+                isSubmitting || isLoading || isDeviceIdLoading || !deviceId ? 'bg-gray-400' : 'bg-black'
+              }`}
             >
               <Text className="text-white font-bold">
                 {isSubmitting ? 'Adding...' : `Confirmar (${suggestedIngredients.length})`}

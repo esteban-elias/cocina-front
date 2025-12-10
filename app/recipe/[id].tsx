@@ -2,8 +2,7 @@ import { useLocalSearchParams } from 'expo-router';
 import { ScrollView, Text, View, Pressable, Linking } from 'react-native';
 import YoutubePlayer from 'react-native-youtube-iframe';
 import { WebView } from 'react-native-webview';
-
-const USER_ID = 1; // TODO: Get from auth context
+import { useDeviceId } from '../../hooks/use-device-id';
 
 type MissingProduct = {
   id: number;
@@ -15,6 +14,11 @@ type MissingProduct = {
 
 export default function RecipeDetail() {
   const params = useLocalSearchParams();
+  const {
+    deviceId,
+    isLoading: isDeviceIdLoading,
+    error: deviceIdError,
+  } = useDeviceId();
 
   const name = Array.isArray(params.name) ? params.name[0] : params.name;
 
@@ -41,11 +45,16 @@ export default function RecipeDetail() {
 
   const handleProductPress = async (product: MissingProduct) => {
     try {
+      if (!deviceId) {
+        await Linking.openURL(product.url);
+        return;
+      }
+
       await fetch(`${process.env.EXPO_PUBLIC_API_URL}/product-clicks`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
-          user_id: USER_ID,
+          device_id: deviceId,
           product_id: product.id,
         }),
       });
@@ -59,6 +68,24 @@ export default function RecipeDetail() {
       }
     }
   };
+
+  if (isDeviceIdLoading) {
+    return (
+      <View className="flex-1 items-center justify-center">
+        <Text>Cargando...</Text>
+      </View>
+    );
+  }
+
+  if (deviceIdError) {
+    return (
+      <View className="flex-1 items-center justify-center px-4">
+        <Text className="text-red-500 text-center">
+          No se pudo preparar tu dispositivo: {deviceIdError.message}
+        </Text>
+      </View>
+    );
+  }
 
   return (
     <ScrollView className="flex-1 px-4 pt-4 gap-4">
@@ -95,8 +122,6 @@ export default function RecipeDetail() {
           ))
         )}
       </View>
-
-
     </ScrollView>
   );
 }
