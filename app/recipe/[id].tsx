@@ -2,7 +2,9 @@ import { useLocalSearchParams } from 'expo-router';
 import { ScrollView, Text, View, Pressable, Linking } from 'react-native';
 import YoutubePlayer from 'react-native-youtube-iframe';
 import { WebView } from 'react-native-webview';
+import MaterialIcons from '@expo/vector-icons/MaterialIcons';
 import { useDeviceId } from '../../hooks/use-device-id';
+import { formatPrice } from '../../lib/utils';
 
 type MissingProduct = {
   id: number;
@@ -88,27 +90,31 @@ export default function RecipeDetail() {
   }
 
   return (
-    <ScrollView className="flex-1 px-4 pt-4 gap-4">
-      <Text className="text-2xl font-semibold">{name}</Text>
+    <ScrollView className="flex-1 px-4 pt-4">
+      <Text className="mt-2 text-2xl font-semibold">{name}</Text>
 
       {videoId ? (
-        <View className="w-full h-60 rounded-xl overflow-hidden">
+        <View className="mt-4 w-full h-60 rounded-xl overflow-hidden border border-zinc-200">
           <YoutubePlayer height={240} videoId={videoId} />
         </View>
       ) : videoUrlParam ? (
-        <View className="w-full h-60 rounded-xl overflow-hidden">
+        <View className="mt-4 w-full h-60 rounded-xl overflow-hidden border border-zinc-200">
           <WebView source={{ uri: videoUrlParam }} allowsInlineMediaPlayback />
         </View>
       ) : null}
 
-      <View className="mt-4 p-4 rounded-2xl bg-zinc-200">
+      <View className="mt-6 gap-2 rounded-2xl">
+        <Text className="text-xl font-semibold">Instrucciones</Text>
         <Text className="text-base leading-6">{instructions}</Text>
       </View>
 
-      <View className="mt-8 mb-20 p-4 rounded-2xl bg-white">
-        <Text className="text-lg font-semibold">Productos para ingredientes faltantes</Text>
+      <View className="mt-8 mb-20 px-4 pt-4 pb-10 rounded-2xl bg-green-600">
+        <View className='flex-row'>
+          <Text className="text-lg font-semibold text-white">JUMB</Text>
+          <Text className="text-lg font-semibold text-yellow-500">OFERTAS</Text>
+        </View>
         {missingProducts.length === 0 ? (
-          <Text className="text-sm text-gray-600">No hay productos sugeridos.</Text>
+          <Text className="text-sm text-white">No hay productos sugeridos.</Text>
         ) : (
           missingProducts.map((product) => (
             <Pressable
@@ -116,8 +122,25 @@ export default function RecipeDetail() {
               className="mt-4"
               onPress={() => handleProductPress(product)}
             >
-              <Text className="text-blue-500">{product.name}</Text>
-              <Text className="text-blue-500 underline">{product.url}</Text>
+              {({ pressed }) => (
+                <View className="flex-row flex-wrap items-center">
+                  <Text className={`font-medium ${pressed ? 'text-yellow-500' : 'text-white'}`}>
+                    {product.name}
+                  </Text>
+                  <Text className={`font-medium ${pressed ? 'text-yellow-500' : 'text-white'}`}>
+                    {' — '}
+                  </Text>
+                  <Text className={`font-medium ${pressed ? 'text-yellow-500' : 'text-white'}`}>
+                    {formatPrice(product.price)}
+                  </Text>
+                  <MaterialIcons
+                    size={14}
+                    name="link"
+                    color={pressed ? '#eab308' : 'white'}
+                    className={`ml-1 -rotate-45 ${pressed ? 'text-yellow-500' : 'text-white'}`}
+                  />
+                </View>
+              )}
             </Pressable>
           ))
         )}

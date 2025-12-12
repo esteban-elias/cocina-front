@@ -121,7 +121,7 @@ function BasicIngredientsModal() {
     >
       <View className="flex-1 bg-white px-4 py-6">
         <View className="flex-1">
-          <Text className="text-xl font-bold">Agregar canasta básica</Text>
+          <Text className="text-xl font-bold">Canasta básica</Text>
           <Text className="text-gray-600 mt-1">Elegimos algunos ingredientes para empezar.</Text>
           {deviceIdError ? (
             <Text className="text-red-500 mt-2">
@@ -143,7 +143,7 @@ function BasicIngredientsModal() {
                       className="absolute right-0 top-0 z-10 bg-zinc-100 rounded-full p-1.5"
                       hitSlop={12}
                     >
-                      <MaterialIcons size={12} name="close" color='red' />
+                      <MaterialIcons size={12} name="close" color='gray' />
                     </Pressable>
                     {ingredient.img_url ? (
                       <Image
@@ -166,10 +166,10 @@ function BasicIngredientsModal() {
               onPress={confirmAdd}
               disabled={isSubmitting || isLoading || isDeviceIdLoading || !deviceId}
               className={`px-5 py-3 rounded-full ${
-                isSubmitting || isLoading || isDeviceIdLoading || !deviceId ? 'bg-gray-400' : 'bg-black'
+                isSubmitting || isLoading || isDeviceIdLoading || !deviceId ? 'bg-gray-400' : 'bg-green-800'
               }`}
             >
-              <Text className="text-white font-bold">
+              <Text className="text-green-100 font-bold">
                 {isSubmitting ? 'Adding...' : `Confirmar (${suggestedIngredients.length})`}
               </Text>
             </Pressable>
@@ -184,19 +184,25 @@ export default function TabLayout() {
   return (
     <RefreshProvider>
       <BasicIngredientsModal />
-      <Tabs>
+      <Tabs
+        screenOptions={{
+          tabBarInactiveTintColor: '#9ca3af',
+          tabBarActiveTintColor: '#15803d',
+        }}
+
+      >
         <Tabs.Screen
           name='index'
           options={{
             title: 'Recetas',
-            tabBarIcon: ({ color }) => <MaterialIcons size={28} name="house" color={color} />,
+            tabBarIcon: ({ color }) => <MaterialIcons size={28} name="food-bank" color={color} />,
           }}
         />
         <Tabs.Screen
           name='add-ingredients'
           options={{
             title: 'Agregar Ingredientes',
-            tabBarIcon: ({ color }) => <MaterialIcons size={28} name="add" color={color} />,
+            tabBarIcon: ({ color }) => <MaterialIcons size={28} name="add-photo-alternate" color={color} />,
           }}
         />
         <Tabs.Screen

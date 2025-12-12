@@ -1,6 +1,6 @@
 import '../../global.css';
 import { useCallback, useMemo, useState } from 'react';
-import { Alert, Image, Modal, Pressable, ScrollView, Text, TextInput, View } from 'react-native';
+import { Alert, Image, Modal, Pressable, ScrollView, Text, TextInput, View, ActivityIndicator } from 'react-native';
 import { useFocusEffect } from 'expo-router';
 import MaterialIcons from '@expo/vector-icons/MaterialIcons';
 import { useDeviceId } from '../../hooks/use-device-id';
@@ -167,13 +167,17 @@ export default function Ingredients() {
   );
 
   if (deviceIdError) return <Text>Error: {deviceIdError.message}</Text>;
-  if (isDeviceIdLoading || isLoading) return <Text>Loading...</Text>;
+  if (isDeviceIdLoading || isLoading) return (
+    <View className="flex-1 justify-center items-center">
+      <ActivityIndicator size="large" />
+    </View>
+  )
   if (error) return <Text>Error: {error.message}</Text>;
 
   return (
     <View className="flex-1">
       <ScrollView className="flex-1">
-        <View className="mt-8 flex-row flex-wrap justify-center gap-x-6 gap-y-8">
+        <View className="mt-8 mb-16 flex-row flex-wrap justify-center gap-x-6 gap-y-8">
           {ingredients.map((ingredient) => (
             <View key={ingredient.id} className="relative max-w-28 gap-2">
               <Pressable
@@ -181,7 +185,7 @@ export default function Ingredients() {
                 className="absolute right-0 top-0 z-10 bg-white rounded-full p-1.5"
                 hitSlop={12}
               >
-                <MaterialIcons size={12} name="close" color='red' />
+                <MaterialIcons size={12} name="close" color='gray' />
               </Pressable>
               {ingredient.img_url ? (
                 <Image
@@ -192,7 +196,7 @@ export default function Ingredients() {
               ) : (
                 <View className="size-28 rounded-2xl bg-zinc-300" />
               )}
-              <Text>{ingredient.name}</Text>
+              <Text className='text-center font-medium'>{ingredient.name}</Text>
             </View>
           ))}
         </View>
@@ -200,10 +204,10 @@ export default function Ingredients() {
 
       <Pressable
         onPress={openManualModal}
-        className="absolute bottom-8 right-6 rounded-full bg-black p-4 shadow-lg"
+        className="absolute bottom-8 right-6 rounded-full bg-green-800 p-4 shadow-lg"
         hitSlop={12}
       >
-        <MaterialIcons name="add" size={28} color="white" />
+        <MaterialIcons name="add" size={28} color="#dcfce7" />
       </Pressable>
 
       <Modal

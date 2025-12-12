@@ -125,9 +125,9 @@ export default function AddIngredients() {
   if (!permission.granted) {
     return (
       <View className="flex-1 justify-center items-center p-4">
-        <Text className="text-center pb-4">We need your permission to use the camera</Text>
+        <Text className="text-center pb-4">Necesitamos permisos para usar la cámara</Text>
         <TouchableOpacity onPress={requestPermission} className="px-6 py-3 bg-black rounded-full">
-          <Text className="text-white font-bold">Grant Permission</Text>
+          <Text className="text-white font-bold">Otorgar permisos</Text>
         </TouchableOpacity>
       </View>
     );
@@ -148,7 +148,7 @@ export default function AddIngredients() {
     return (
       <View className="flex-1 justify-center items-center">
         <ActivityIndicator size="large" />
-        <Text className="mt-4 text-gray-500">Scanning image...</Text>
+        <Text className="mt-4 text-gray-500">Escaneando imagen...</Text>
       </View>
     );
   }
@@ -158,7 +158,7 @@ export default function AddIngredients() {
       <View className="flex-1 justify-center items-center p-4">
         <Text className="text-red-500">Error: {error.message}</Text>
         <TouchableOpacity onPress={resetCamera} className="mt-4 px-6 py-3 bg-black rounded-full">
-          <Text className="text-white font-bold">Try Again</Text>
+          <Text className="text-white font-bold">Intentar de nuevo</Text>
         </TouchableOpacity>
       </View>
     );
@@ -168,7 +168,7 @@ export default function AddIngredients() {
     <View className="flex-1 gap-4 bg-white">
       <Image source={{ uri: photoUri }} className="h-80 w-full bg-zinc-300" resizeMode="cover" />
       
-      <Text className="px-4 text-xl font-bold">Detected Ingredients:</Text>
+      <Text className="px-4 text-xl font-bold">Ingredientes detectados:</Text>
 
       <ScrollView className="flex-1">
         <View className="flex-row flex-wrap justify-center gap-x-6 gap-y-8 pb-32">
@@ -179,7 +179,7 @@ export default function AddIngredients() {
                 className="absolute right-0 top-0 z-10 bg-zinc-100 rounded-full p-1.5"
                 hitSlop={12}
               >
-                <MaterialIcons size={12} name="close" color='red' />
+                <MaterialIcons size={12} name="close" color='gray' />
               </Pressable>
               {ingredient.img_url ? (
                 <Image
@@ -200,17 +200,17 @@ export default function AddIngredients() {
 
       <View className="absolute bottom-10 left-0 right-0 items-center flex-row justify-center gap-4">
         <TouchableOpacity onPress={resetCamera} className="px-6 py-3 rounded-full bg-gray-200">
-          <Text className="font-bold">Retake</Text>
+          <Text className="font-bold">Retomar foto</Text>
         </TouchableOpacity>
         <TouchableOpacity 
           onPress={confirmIngredients} 
           disabled={isSubmitting || !deviceId || scannedIngredients.length === 0}
           className={`px-6 py-3 rounded-full shadow-lg ${
-            isSubmitting || !deviceId ? 'bg-gray-400' : 'bg-black'
+            isSubmitting || !deviceId ? 'bg-gray-400' : 'bg-green-800'
           }`}
         >
-          <Text className="text-white font-bold">
-            {isSubmitting ? 'Adding...' : `Confirmar (${scannedIngredients.length}) ➡️`}
+          <Text className="text-green-100 font-bold">
+            {isSubmitting ? 'Agregando...' : `Confirmar (${scannedIngredients.length})`}
           </Text>
         </TouchableOpacity>
       </View>

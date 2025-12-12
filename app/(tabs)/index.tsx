@@ -1,7 +1,8 @@
 import '../../global.css';
 import { useCallback, useContext, useMemo, useState } from 'react';
-import { View, ScrollView, Text, Image, Pressable } from 'react-native';
+import { View, ScrollView, Text, Image, Pressable, ActivityIndicator } from 'react-native';
 import { useFocusEffect, useRouter } from 'expo-router';
+import MaterialIcons from '@expo/vector-icons/MaterialIcons';
 import { RefreshContext } from './refresh-context';
 import { useDeviceId } from '../../hooks/use-device-id';
 
@@ -59,21 +60,24 @@ export default function Index() {
   };
 
   if (deviceIdError) return <Text>Error: {deviceIdError.message}</Text>;
-  if (isDeviceIdLoading || isLoading) return <Text>Loading...</Text>;
+  if (isDeviceIdLoading || isLoading) return (
+    <View className="flex-1 justify-center items-center">
+      <ActivityIndicator size="large" />
+    </View>
+  )
   if (error) return <Text>Error: {error.message}</Text>;
 
   if (recipes.length === 0) {
     return (
-      <Text>Escanea ingredientes primero</Text>
+      <Text className='mx-4 mt-6 text-xl font-semibold text-zinc-500'>Agrega ingredientes para mostrar recetas</Text>
     )
   }
 
   return (
-    <ScrollView className='px-4 pt-4 flex-1 gap-8'>
+    <ScrollView className='px-4 pt-6 flex-1 gap-8'>
       <View className='pb-10 gap-2'>
-        <Text className='text-2xl font-bold'>Recetas sugeridas 🍲</Text>
-        <Text className='text-xl text-zinc-600'>En base a tus ingredientes, te sugerimos:</Text>
-        <View className='gap-8 mt-4'>
+        <Text className='text-2xl font-bold text-zinc-900'>Basado en tus ingredientes</Text>
+        <View className='gap-6 mt-2'>
           {visibleRecipes.map((recipe) => (
             <Pressable
               key={recipe.id}
@@ -90,43 +94,49 @@ export default function Index() {
                 })
               }
             >
-              <View className='p-4 rounded-2xl bg-zinc-200'>
-                <Text className='font-semibold'>{recipe.name}</Text>
+              <View className={`p-4 rounded-2xl ${recipe.missing_ingredients.length === 0 ? 'bg-green-100' : 'bg-zinc-200'}`}>
+                <Text className='leading-6 text-lg font-semibold'>{recipe.name}</Text>
                 {recipe.img_url ? (
                   <Image
                     source={{ uri: recipe.img_url }}
-                    className='mt-2 w-full h-48 rounded-2xl'
+                    className='mt-3 w-full h-48 rounded-2xl border border-zinc-300'
                     resizeMode='cover'
                   />
                 ) : null}
+                {recipe.missing_ingredients.length === 0 ? (
+                  <View>
+                    <Text className='mt-4 font-medium text-green-900'>¡Ya puedes cocinar esta receta!</Text>
+                  </View>
+                ) : (
+                  <View>
+                    <View className='flex flex-row flex-wrap mt-4'>
+                      <Text className='font-medium text-zinc-600'>Ya tienes </Text>
+                      {recipe.matching_ingredients.map((ingredient, index) => (
+                        <Text key={ingredient.id} className='font-medium text-green-900'>
+                          {ingredient.name}{index === recipe.matching_ingredients.length - 1 ? '.' : ', '}
+                        </Text>
+                      ))}
+                    </View>
+                    <View className='flex flex-row flex-wrap'>
+                      <Text className='font-medium text-zinc-600'>Te falta </Text>
+                      {recipe.missing_ingredients.map((ingredient, index) => (
+                        <Text key={ingredient.id} className='font-medium text-red-900'>
+                          {ingredient.name}{index === recipe.missing_ingredients.length - 1 ? '.' : ', '}
+                        </Text>
+                      ))}
+                    </View>
+                  </View>
+                )}
 
-
-
-                <View className='flex flex-row mt-2'>
-                  <Text>Ya tienes </Text>
-                  {recipe.matching_ingredients.map((ingredient) => (
-                    <Text key={ingredient.id} className='text-green-800'>
-                      {ingredient.name},{' '}
-                    </Text>
-                  ))}
-                </View>
-                <View className='flex flex-row flex-wrap'>
-                  <Text>Te falta </Text>
-                  {recipe.missing_ingredients.map((ingredient) => (
-                    <Text key={ingredient.id} className='text-red-800'>
-                      {ingredient.name},{' '}
-                    </Text>
-                  ))}
-                </View>
               </View>
             </Pressable>
           ))}
           {canLoadMore ? (
             <Pressable
               onPress={handleLoadMore}
-              className="self-center rounded-full bg-black px-5 py-3"
+              className="self-center rounded-full bg-black px-5 py-3 bg-green-800"
             >
-              <Text className="text-white font-bold">Cargar más</Text>
+              <Text className="font-bold text-green-100">Cargar más</Text>
             </Pressable>
           ) : null}
         </View>
