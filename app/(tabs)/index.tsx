@@ -28,15 +28,22 @@ export default function Index() {
       fetch(`${process.env.EXPO_PUBLIC_API_URL}/recipes/${deviceId}`)
         .then(res => res.json())
         .then(data => {
-          // Sort by missing ingredients count ascending
-          const sorted = [...data.recipes].sort(
+          // Show cookable recipes first, then sort not-cookable by ingredients count ascending,
+          // then filter out not-cookable with no missing products
+          const cookable = [...data.recipes].filter(
+            (recipe) => recipe.missing_ingredients.length === 0
+          );
+          const notCookable = [...data.recipes].filter(
+            (recipe) => recipe.missing_ingredients.length > 0
+          );
+          const notCookableSorted = notCookable.sort(
             (a, b) => a.missing_ingredients.length - b.missing_ingredients.length
           );
-          // Filter to show only recipes with missing products
-          const filtered = sorted.filter(
+          const notCookableFiltered = notCookableSorted.filter(
             (recipe) => recipe.missing_products.length > 0
-          )
-          setRecipes(filtered);
+          );
+          const merged = [...cookable, ...notCookableFiltered];
+          setRecipes(merged);
           setVisibleCount(15);
           setIsLoading(false);
         })
