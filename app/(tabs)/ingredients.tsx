@@ -3,6 +3,8 @@ import { useCallback, useMemo, useState } from 'react';
 import { Alert, Image, Modal, Pressable, ScrollView, Text, TextInput, View, ActivityIndicator } from 'react-native';
 import { useFocusEffect } from 'expo-router';
 import MaterialIcons from '@expo/vector-icons/MaterialIcons';
+import Toast from 'react-native-toast-message';
+import { fetchCookableRecipes, findNewCookableRecipes } from '../../lib/recipes';
 import { useDeviceId } from '../../hooks/use-device-id';
 
 type Ingredient = {
@@ -23,6 +25,15 @@ export default function Ingredients() {
     isLoading: isDeviceIdLoading,
     error: deviceIdError,
   } = useDeviceId();
+  const getCookableRecipes = useCallback(async () => {
+    if (!deviceId) return null;
+    try {
+      return await fetchCookableRecipes(deviceId);
+    } catch (err) {
+      console.error('Cookable fetch failed:', err);
+      return null;
+    }
+  }, [deviceId]);
 
   const fetchIngredients = useCallback(async () => {
     if (!deviceId) return;
@@ -118,6 +129,7 @@ export default function Ingredients() {
   const addIngredient = useCallback(
     async (ingredient: Ingredient) => {
       if (!deviceId) return;
+      const previousCookable = await getCookableRecipes();
       try {
         const response = await fetch(`${process.env.EXPO_PUBLIC_API_URL}/ingredients/${deviceId}`, {
           method: 'POST',
@@ -131,6 +143,18 @@ export default function Ingredients() {
           throw new Error(detail);
         }
 
+        const updatedCookable = await getCookableRecipes();
+        if (previousCookable && updatedCookable) {
+          const newCookable = findNewCookableRecipes(previousCookable, updatedCookable);
+          if (newCookable.length > 0) {
+            const recipeNames = newCookable.map((recipe) => recipe.name).join(', ');
+            Toast.show({
+              type: 'success',
+              text1: `¡Ahora puedes cocinar ${recipeNames}!`,
+            });
+          }
+        }
+
         setIngredients((prev) => {
           const exists = prev.some((item) => item.id === ingredient.id);
           if (exists) return prev;
@@ -142,7 +166,7 @@ export default function Ingredients() {
         Alert.alert('No se pudo agregar', message);
       }
     },
-    [closeManualModal, deviceId]
+    [closeManualModal, deviceId, getCookableRecipes]
   );
 
   const confirmManualAdd = useCallback(

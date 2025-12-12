@@ -1,11 +1,15 @@
 import { Stack } from 'expo-router';
 import '../global.css';
+import Toast from 'react-native-toast-message';
 
 export default function RootLayout() {
   return (
-    <Stack>
-      <Stack.Screen name="(tabs)" options={{ headerShown: false }} />
-      <Stack.Screen name="recipe/[id]" options={{ title: 'Receta' }} />
-    </Stack>
+    <>
+      <Stack>
+        <Stack.Screen name="(tabs)" options={{ headerShown: false }} />
+        <Stack.Screen name="recipe/[id]" options={{ title: 'Receta' }} />
+      </Stack>
+      <Toast />
+    </>
   );
 }

@@ -4,6 +4,8 @@ import { View, Text, Image, ActivityIndicator, ScrollView, TouchableOpacity, Pre
 import { CameraView, useCameraPermissions } from 'expo-camera';
 import { router } from 'expo-router';
 import MaterialIcons from '@expo/vector-icons/MaterialIcons';
+import Toast from 'react-native-toast-message';
+import { fetchCookableRecipes, findNewCookableRecipes } from '../../lib/recipes';
 import { useDeviceId } from '../../hooks/use-device-id';
 
 export default function AddIngredients() {
@@ -38,6 +40,16 @@ export default function AddIngredients() {
       </View>
     );
   }
+
+  const loadCookableRecipes = async () => {
+    if (!deviceId) return null;
+    try {
+      return await fetchCookableRecipes(deviceId);
+    } catch (err) {
+      console.error('Cookable fetch failed:', err);
+      return null;
+    }
+  };
 
   const takePicture = async () => {
     if (!cameraRef.current) return;
@@ -80,6 +92,7 @@ export default function AddIngredients() {
     if (scannedIngredients.length === 0 || !deviceId) return;
 
     setIsSubmitting(true);
+    const previousCookable = await loadCookableRecipes();
     try {
       const ingredientIds = scannedIngredients.map((ing) => ing.id);
 
@@ -91,6 +104,18 @@ export default function AddIngredients() {
 
       if (!response.ok) {
         throw new Error(`HTTP error! status: ${response.status}`);
+      }
+
+      const updatedCookable = await loadCookableRecipes();
+      if (previousCookable && updatedCookable) {
+        const newCookable = findNewCookableRecipes(previousCookable, updatedCookable);
+        if (newCookable.length > 0) {
+          const recipeNames = newCookable.map((recipe) => recipe.name).join(', ');
+          Toast.show({
+            type: 'success',
+            text1: `¡Ahora puedes cocinar ${recipeNames}!`,
+          });
+        }
       }
 
       // Reset to camera view after successful add
