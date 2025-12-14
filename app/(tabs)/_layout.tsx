@@ -13,6 +13,7 @@ const ONBOARDING_KEY = 'hasOnboarded';
 type Ingredient = {
   id: number;
   name: string;
+  name_es?: string | null;
   img_url?: string | null;
 };
 
@@ -28,6 +29,10 @@ function BasicIngredientsModal() {
     isLoading: isDeviceIdLoading,
     error: deviceIdError,
   } = useDeviceId();
+  const getIngredientName = useCallback(
+    (ingredient: Ingredient) => (ingredient.name_es ?? '').trim() || ingredient.name,
+    []
+  );
 
   const fetchBasics = useCallback(async () => {
     setIsLoading(true);
@@ -154,7 +159,7 @@ function BasicIngredientsModal() {
                     ) : (
                       <View className="size-28 rounded-2xl bg-zinc-300" />
                     )}
-                    <Text className="text-center">{ingredient.name}</Text>
+                    <Text className="text-center">{getIngredientName(ingredient)}</Text>
                   </View>
                 ))}
               </View>

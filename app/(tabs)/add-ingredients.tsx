@@ -8,11 +8,18 @@ import Toast from 'react-native-toast-message';
 import { fetchCookableRecipes, findNewCookableRecipes } from '../../lib/recipes';
 import { useDeviceId } from '../../hooks/use-device-id';
 
+type Ingredient = {
+  id: number;
+  name: string;
+  name_es?: string | null;
+  img_url?: string | null;
+};
+
 export default function AddIngredients() {
-  const [scannedIngredients, setScannedIngredients] = useState([]);
+  const [scannedIngredients, setScannedIngredients] = useState<Ingredient[]>([]);
   const [isLoading, setIsLoading] = useState(false);
   const [isSubmitting, setIsSubmitting] = useState(false);
-  const [error, setError] = useState(null);
+  const [error, setError] = useState<Error | null>(null);
   const [photoUri, setPhotoUri] = useState<string | null>(null);
   const [permission, requestPermission] = useCameraPermissions();
   const cameraRef = useRef<CameraView>(null);
@@ -81,7 +88,8 @@ export default function AddIngredients() {
       const data = await apiResponse.json();
       setScannedIngredients(data.ingredients || []);
     } catch (err) {
-      setError(err);
+      const message = err instanceof Error ? err : new Error('No se pudo escanear la imagen');
+      setError(message);
       console.error("Scan error:", err);
     } finally {
       setIsLoading(false);
@@ -124,7 +132,8 @@ export default function AddIngredients() {
       setError(null);
       router.replace('/');
     } catch (err) {
-      setError(err);
+      const message = err instanceof Error ? err : new Error('No se pudieron agregar los ingredientes');
+      setError(message);
       console.error("Confirm error:", err);
     } finally {
       setIsSubmitting(false);
@@ -139,7 +148,7 @@ export default function AddIngredients() {
 
   const removeScannedIngredient = (ingredientId: number) => {
     setScannedIngredients((prev) =>
-      prev.filter((ingredient: { id: number }) => ingredient.id !== ingredientId)
+      prev.filter((ingredient) => ingredient.id !== ingredientId)
     );
   };
 
@@ -217,7 +226,9 @@ export default function AddIngredients() {
                   <Text className="text-2xl">🥕</Text>
                 </View>
               )}
-              <Text className="font-medium text-center">{ingredient.name}</Text>
+              <Text className="font-medium text-center">
+                {(ingredient.name_es ?? '').trim() || ingredient.name}
+              </Text>
             </View>
           ))}
         </View>

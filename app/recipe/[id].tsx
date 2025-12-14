@@ -23,12 +23,17 @@ export default function RecipeDetail() {
   } = useDeviceId();
 
   const name = Array.isArray(params.name) ? params.name[0] : params.name;
+  const nameEs = Array.isArray(params.name_es) ? params.name_es[0] : params.name_es;
+  const displayName = nameEs || name || 'Receta';
 
+  const instructionEsParam = Array.isArray(params.instructions_es)
+    ? params.instructions_es[0]
+    : params.instructions_es;
   const instructionsParam = Array.isArray(params.instructions)
     ? params.instructions[0]
     : params.instructions;
 
-  const instructions = instructionsParam || 'No hay instrucciones disponibles.';
+  const instructions = instructionEsParam || instructionsParam || 'No hay instrucciones disponibles.';
 
   const missingProductsParam = Array.isArray(params.missingProducts)
     ? params.missingProducts[0]
@@ -91,7 +96,7 @@ export default function RecipeDetail() {
 
   return (
     <ScrollView className="flex-1 px-4 pt-4">
-      <Text className="mt-2 text-2xl font-semibold">{name}</Text>
+      <Text className="mt-2 text-2xl font-semibold">{displayName}</Text>
 
       {videoId ? (
         <View className="mt-4 w-full h-60 rounded-xl overflow-hidden border border-zinc-200">

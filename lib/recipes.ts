@@ -1,6 +1,7 @@
 type ApiRecipe = {
   id: number;
   name: string;
+  name_es?: string | null;
   missing_ingredients: unknown[];
 };
 
@@ -21,7 +22,10 @@ export async function fetchCookableRecipes(deviceId: string): Promise<CookableRe
 
   return recipes
     .filter((recipe) => Array.isArray(recipe.missing_ingredients) && recipe.missing_ingredients.length === 0)
-    .map((recipe) => ({ id: recipe.id, name: recipe.name }));
+    .map((recipe) => ({
+      id: recipe.id,
+      name: (recipe.name_es ?? '').trim() || recipe.name,
+    }));
 }
 
 export function findNewCookableRecipes(

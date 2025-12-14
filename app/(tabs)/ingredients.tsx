@@ -10,6 +10,7 @@ import { useDeviceId } from '../../hooks/use-device-id';
 type Ingredient = {
   id: number;
   name: string;
+  name_es?: string | null;
   img_url?: string | null;
 };
 
@@ -25,6 +26,10 @@ export default function Ingredients() {
     isLoading: isDeviceIdLoading,
     error: deviceIdError,
   } = useDeviceId();
+  const getIngredientName = useCallback(
+    (ingredient: Ingredient) => (ingredient.name_es ?? '').trim() || ingredient.name,
+    []
+  );
   const getCookableRecipes = useCallback(async () => {
     if (!deviceId) return null;
     try {
@@ -81,7 +86,7 @@ export default function Ingredients() {
     (ingredient: Ingredient) => {
       Alert.alert(
         'Eliminar ingrediente',
-        `¿Eliminar ${ingredient.name} de tu lista?`,
+        `¿Eliminar ${getIngredientName(ingredient)} de tu lista?`,
         [
           { text: 'Cancel', style: 'cancel' },
           { text: 'Delete', style: 'destructive', onPress: () => deleteIngredient(ingredient.id) },
@@ -89,7 +94,7 @@ export default function Ingredients() {
         { cancelable: true }
       );
     },
-    [deleteIngredient]
+    [deleteIngredient, getIngredientName]
   );
 
   const fetchAllIngredients = useCallback(async () => {
@@ -121,9 +126,10 @@ export default function Ingredients() {
   const filteredIngredients = useMemo(() => {
     if (!searchTerm.trim()) return allIngredients;
     const lower = searchTerm.toLowerCase();
-    return allIngredients.filter((ingredient) =>
-      ingredient.name.toLowerCase().includes(lower)
-    );
+    return allIngredients.filter((ingredient) => {
+      const fields = [ingredient.name, ingredient.name_es ?? ''].map((value) => value.toLowerCase());
+      return fields.some((value) => value.includes(lower));
+    });
   }, [allIngredients, searchTerm]);
 
   const addIngredient = useCallback(
@@ -173,7 +179,7 @@ export default function Ingredients() {
     (ingredient: Ingredient) => {
       Alert.alert(
         'Agregar ingrediente',
-        `¿Agregar ${ingredient.name} a tu lista?`,
+        `¿Agregar ${getIngredientName(ingredient)} a tu lista?`,
         [
           { text: 'Cancelar', style: 'cancel' },
           { text: 'Confirmar', onPress: () => addIngredient(ingredient) },
@@ -181,7 +187,7 @@ export default function Ingredients() {
         { cancelable: true }
       );
     },
-    [addIngredient]
+    [addIngredient, getIngredientName]
   );
 
   useFocusEffect(
@@ -220,7 +226,7 @@ export default function Ingredients() {
               ) : (
                 <View className="size-28 rounded-2xl bg-zinc-300" />
               )}
-              <Text className='text-center font-medium'>{ingredient.name}</Text>
+              <Text className='text-center font-medium'>{getIngredientName(ingredient)}</Text>
             </View>
           ))}
         </View>
@@ -263,7 +269,7 @@ export default function Ingredients() {
                   onPress={() => confirmManualAdd(ingredient)}
                   className="py-3 border-b border-gray-100"
                 >
-                  <Text className="text-base">{ingredient.name}</Text>
+                  <Text className="text-base">{getIngredientName(ingredient)}</Text>
                 </Pressable>
               ))}
               {filteredIngredients.length === 0 ? (
