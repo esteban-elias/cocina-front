@@ -28,6 +28,7 @@ type Recipe = {
   instructions_es?: string | null;
   img_url?: string | null;
   video_url?: string | null;
+  ingredients?: Ingredient[];
   missing_ingredients: Ingredient[];
   matching_ingredients: Ingredient[];
   missing_products: Product[];
@@ -152,6 +153,7 @@ export default function Index() {
             const matchingIngredients = recipe.matching_ingredients ?? [];
             const missingIngredients = recipe.missing_ingredients ?? [];
             const missingProducts = recipe.missing_products ?? [];
+            const ingredients = recipe.ingredients ?? [];
 
             return (
               <Pressable
@@ -165,6 +167,7 @@ export default function Index() {
                       name_es: recipe.name_es,
                       instructions_es: recipe.instructions_es,
                       instructions: recipe.instructions ?? '',
+                      ingredients: JSON.stringify(ingredients),
                       missingProducts: JSON.stringify(missingProducts),
                       video_url: recipe.video_url,
                     },

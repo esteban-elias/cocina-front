@@ -14,6 +14,12 @@ type MissingProduct = {
   ingredient_id?: number | null;
 };
 
+type Ingredient = {
+  id: number;
+  name: string;
+  name_es?: string | null;
+};
+
 export default function RecipeDetail() {
   const params = useLocalSearchParams();
   const {
@@ -45,6 +51,15 @@ export default function RecipeDetail() {
       missingProducts = JSON.parse(missingProductsParam) as MissingProduct[];
     } catch (error) {
       console.warn('Invalid missing products payload', error);
+    }
+  }
+  const ingredientsParam = Array.isArray(params.ingredients) ? params.ingredients[0] : params.ingredients;
+  let ingredients: Ingredient[] = [];
+  if (ingredientsParam) {
+    try {
+      ingredients = JSON.parse(ingredientsParam) as Ingredient[];
+    } catch (error) {
+      console.warn('Invalid ingredients payload', error);
     }
   }
   const videoUrlParam = Array.isArray(params.video_url) ? params.video_url[0] : params.video_url;
@@ -107,6 +122,21 @@ export default function RecipeDetail() {
           <WebView source={{ uri: videoUrlParam }} allowsInlineMediaPlayback />
         </View>
       ) : null}
+
+      <View className="mt-6 gap-2 rounded-2xl">
+        <Text className="text-xl font-semibold">Ingredientes</Text>
+        {ingredients.length === 0 ? (
+          <Text className="text-base leading-6 text-zinc-500">Sin ingredientes disponibles.</Text>
+        ) : (
+          <Text className="text-base leading-6">
+            {ingredients.map((ingredient, index) => {
+              const name = ingredient.name_es?.trim() || ingredient.name;
+              const isLast = index === ingredients.length - 1;
+              return `${name}${isLast ? '.' : ', '}`;
+            }).join('')}
+          </Text>
+        )}
+      </View>
 
       <View className="mt-6 gap-2 rounded-2xl">
         <Text className="text-xl font-semibold">Instrucciones</Text>
