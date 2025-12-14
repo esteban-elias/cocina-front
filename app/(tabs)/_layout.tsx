@@ -136,7 +136,7 @@ function BasicIngredientsModal() {
 
           {isLoading ? (
             <View className="py-8 items-center">
-              <ActivityIndicator />
+              <ActivityIndicator size='large' color='#166534'/>
             </View>
           ) : (
             <ScrollView className="mt-6 ">

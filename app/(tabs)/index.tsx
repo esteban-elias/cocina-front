@@ -131,7 +131,7 @@ export default function Index() {
   if (deviceIdError) return <Text>Error: {deviceIdError.message}</Text>;
   if (isDeviceIdLoading || isLoading) return (
     <View className="flex-1 justify-center items-center">
-      <ActivityIndicator size="large" />
+      <ActivityIndicator size="large" color='#166534'/>
     </View>
   )
   if (error) return <Text>Error: {error.message}</Text>;

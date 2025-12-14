@@ -32,7 +32,7 @@ export default function AddIngredients() {
   if (isDeviceIdLoading) {
     return (
       <View className="flex-1 justify-center items-center">
-        <ActivityIndicator size="large" />
+        <ActivityIndicator size="large" color='#166534'/>
         <Text className="mt-4 text-gray-500">Preparando tu dispositivo...</Text>
       </View>
     );
@@ -181,7 +181,7 @@ export default function AddIngredients() {
   if (isLoading) {
     return (
       <View className="flex-1 justify-center items-center">
-        <ActivityIndicator size="large" />
+        <ActivityIndicator size="large" color='#166534'/>
         <Text className="mt-4 text-gray-500">Escaneando imagen...</Text>
       </View>
     );
