@@ -2,7 +2,7 @@ import '../../global.css';
 import { useCallback, useContext, useMemo, useState } from 'react';
 import { View, ScrollView, Text, Image, Pressable, ActivityIndicator } from 'react-native';
 import { useFocusEffect, useRouter } from 'expo-router';
-import { RefreshContext } from './refresh-context';
+import { RefreshContext } from '../../providers/refresh-context';
 import { useDeviceId } from '../../hooks/use-device-id';
 
 type Ingredient = {

@@ -5,7 +5,7 @@ import { StatusBar } from 'expo-status-bar';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import MaterialIcons from '@expo/vector-icons/MaterialIcons';
 import '../../global.css';
-import { RefreshContext, RefreshProvider } from './refresh-context';
+import { RefreshContext, RefreshProvider } from '../../providers/refresh-context';
 import { useDeviceId } from '../../hooks/use-device-id';
 
 const ONBOARDING_KEY = 'hasOnboarded';
