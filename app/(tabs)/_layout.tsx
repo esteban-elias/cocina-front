@@ -213,7 +213,7 @@ export default function TabLayout() {
         <Tabs.Screen
           name='ingredients'
           options={{
-            title: 'Ingredientes',
+            title: 'Despensa',
             tabBarIcon: ({ color }) => <MaterialIcons size={28} name="shopping-basket" color={color} />,
           }}
         />
