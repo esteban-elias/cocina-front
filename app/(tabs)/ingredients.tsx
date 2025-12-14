@@ -1,5 +1,5 @@
 import '../../global.css';
-import { useCallback, useMemo, useState } from 'react';
+import { useCallback, useEffect, useMemo, useState } from 'react';
 import { Alert, Image, Modal, Pressable, ScrollView, Text, TextInput, View, ActivityIndicator } from 'react-native';
 import { useFocusEffect } from 'expo-router';
 import MaterialIcons from '@expo/vector-icons/MaterialIcons';
@@ -21,6 +21,7 @@ export default function Ingredients() {
   const [isManualModalVisible, setIsManualModalVisible] = useState(false);
   const [allIngredients, setAllIngredients] = useState<Ingredient[]>([]);
   const [searchTerm, setSearchTerm] = useState('');
+  const [debouncedSearchTerm, setDebouncedSearchTerm] = useState('');
   const {
     deviceId,
     isLoading: isDeviceIdLoading,
@@ -123,14 +124,30 @@ export default function Ingredients() {
     setSearchTerm('');
   }, []);
 
+  useEffect(() => {
+    const timeout = setTimeout(() => {
+      setDebouncedSearchTerm(searchTerm.trim().toLowerCase());
+    }, 250);
+
+    return () => clearTimeout(timeout);
+  }, [searchTerm]);
+
+  const searchableIngredients = useMemo(
+    () =>
+      allIngredients.map((ingredient) => ({
+        ...ingredient,
+        searchLabel: `${ingredient.name} ${ingredient.name_es ?? ''}`.toLowerCase(),
+      })),
+    [allIngredients]
+  );
+
   const filteredIngredients = useMemo(() => {
-    if (!searchTerm.trim()) return allIngredients;
-    const lower = searchTerm.toLowerCase();
-    return allIngredients.filter((ingredient) => {
-      const fields = [ingredient.name, ingredient.name_es ?? ''].map((value) => value.toLowerCase());
-      return fields.some((value) => value.includes(lower));
-    });
-  }, [allIngredients, searchTerm]);
+    if (!debouncedSearchTerm) return allIngredients;
+
+    return searchableIngredients
+      .filter((ingredient) => ingredient.searchLabel.includes(debouncedSearchTerm))
+      .map(({ searchLabel, ...ingredient }) => ingredient);
+  }, [allIngredients, debouncedSearchTerm, searchableIngredients]);
 
   const addIngredient = useCallback(
     async (ingredient: Ingredient) => {
