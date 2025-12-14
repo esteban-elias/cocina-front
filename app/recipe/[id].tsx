@@ -138,20 +138,18 @@ export default function RecipeDetail() {
         )}
       </View>
 
-      <View className="mt-6 gap-2 rounded-2xl">
+      <View className={`mt-6 gap-2 rounded-2xl ${missingProducts.length === 0 && 'pb-24'}`}>
         <Text className="text-xl font-semibold">Instrucciones</Text>
         <Text className="text-base leading-6">{instructions}</Text>
       </View>
 
-      <View className="mt-8 mb-20 px-4 pt-4 pb-10 rounded-2xl bg-green-600">
-        <View className='flex-row'>
-          <Text className="text-lg font-semibold text-white">JUMB</Text>
-          <Text className="text-lg font-semibold text-yellow-500">OFERTAS</Text>
-        </View>
-        {missingProducts.length === 0 ? (
-          <Text className="text-sm text-white">No hay productos sugeridos.</Text>
-        ) : (
-          missingProducts.map((product) => (
+      {missingProducts.length > 0 ? (
+        <View className="mt-8 mb-20 px-4 pt-4 pb-10 rounded-2xl bg-green-600">
+          <View className='flex-row'>
+            <Text className="text-lg font-semibold text-white">JUMB</Text>
+            <Text className="text-lg font-semibold text-yellow-500">OFERTAS</Text>
+          </View>
+          {missingProducts.map((product) => (
             <Pressable
               key={product.id}
               className="mt-4"
@@ -177,9 +175,9 @@ export default function RecipeDetail() {
                 </View>
               )}
             </Pressable>
-          ))
-        )}
-      </View>
+          ))}
+        </View>
+      ) : null}
     </ScrollView>
   );
 }
