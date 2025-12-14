@@ -33,6 +33,7 @@
     "assetBundlePatterns": [
       "**/*"
     ],
+    "scheme": "cocina",
     "ios": {
       "supportsTablet": true
     },
